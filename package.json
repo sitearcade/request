@@ -1,6 +1,6 @@
 {
   "name": "@sitearcade/request",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Fetch-wrapper with some useful features.",
   "license": "MIT",
   "homepage": "https://www.sitearcade.com",
