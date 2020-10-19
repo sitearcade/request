@@ -4,7 +4,7 @@ import qs from 'querystring';
 
 import fetch from 'isomorphic-unfetch';
 import retry from 'promise-retry';
-import R from 'ramda';
+import {mergeDeepRight} from 'ramda';
 
 // vars
 
@@ -21,6 +21,8 @@ const startSlashRx = /^\//;
 
 // fns
 
+const nil = () => null;
+
 const encodeUrl = (baseUrl = '', path = '', query = null) => [
   ...baseUrl ? [baseUrl.replace(endSlashRx, ''), '/'] : [],
   path.replace(startSlashRx, ''),
@@ -35,7 +37,7 @@ const parseRes = (type) => async (res) => {
   const parsed = {
     status: res.status,
     headers: res.headers,
-    body: await res[type]().catch(R.always(null)),
+    body: await res[type]().catch(nil),
   };
 
   if (!res.ok) {
@@ -57,7 +59,8 @@ const parseType = {
   arrayBuffer: parseRes('arrayBuffer'),
 };
 
-const getBody = R.prop('body');
+const getBody = (res) => res.body ?? null;
+const getAll = (res) => res ?? null;
 
 // export
 
@@ -102,8 +105,8 @@ export default async function request(opts = {}) {
     fetch(reqUrl, reqOpts).catch(retryFn)
   ), retryOpts)
     .then(parseType[response])
-    .then(onlyBody ? getBody : R.identity);
+    .then(onlyBody ? getBody : getAll);
 }
 
 request.extend = (defs = {}) => (opts) =>
-  request(R.mergeDeepRight(defs, opts));
+  request(mergeDeepRight(defs, opts));
