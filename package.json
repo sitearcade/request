@@ -1,0 +1,96 @@
+{
+  "name": "@sitearcade/request",
+  "version": "0.0.0",
+  "description": "Fetch-wrapper with some useful features.",
+  "license": "MIT",
+  "homepage": "https://www.sitearcade.com",
+  "repository": "github:sitearcade/request",
+  "bugs": "https://github.com/sitearcade/request/issues",
+  "author": {
+    "name": "Mike Stop Continues",
+    "email": "mike@sitearcade.com",
+    "url": "https://www.sitearcade.com"
+  },
+  "sideEffects": false,
+  "source": "src/index.js",
+  "main": "./dist/index.js",
+  "jsnext:main": "./dist/index.modern.js",
+  "module": "./dist/index.module.js",
+  "syntax": {
+    "esmodules": "./dist/index.modern.js"
+  },
+  "exports": {
+    ".": {
+      "browser": "./dist/index.module.js",
+      "import": "./dist/index.module.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "start": "microbundle watch --no-compress -f cjs,esm,modern",
+    "build": "microbundle --no-compress -f cjs,esm,modern",
+    "clean": "rm -rf dist",
+    "test": "NODE_ENV=testing jest --passWithNoTests --coverage",
+    "test:ci": "NODE_ENV=testing jest --passWithNoTests --ci",
+    "test:watch": "NODE_ENV=testing jest --passWithNoTests --coverage --watch",
+    "preversion": "npm run build && npm test",
+    "postversion": "npm publish --access public",
+    "prepublishOnly": "npm run clean && npm run build",
+    "postpublish": "git push origin --all; git push origin --tags"
+  },
+  "dependencies": {
+    "isomorphic-unfetch": "^3.1.0",
+    "promise-retry": "^2.0.1",
+    "querystring": "^0.2.0",
+    "ramda": "^0.27.1"
+  },
+  "devDependencies": {
+    "@babel/core": "7.12.3",
+    "@sitearcade/babel-preset": "0.2.0",
+    "@sitearcade/browserslist-config": "0.2.0",
+    "@sitearcade/eslint-config": "0.2.7",
+    "@sitearcade/jest-preset": "0.1.2",
+    "babel-eslint": "11.0.0-beta.2",
+    "eslint": "7.11.0",
+    "eslint-import-resolver-lerna": "1.1.0",
+    "eslint-plugin-babel": "5.3.1",
+    "eslint-plugin-better-styled-components": "1.1.2",
+    "eslint-plugin-eslint-comments": "3.2.0",
+    "eslint-plugin-fp": "2.3.0",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-jest": "24.1.0",
+    "eslint-plugin-jest-formatting": "2.0.0",
+    "eslint-plugin-jsx-a11y": "6.3.1",
+    "eslint-plugin-lodash": "7.1.0",
+    "eslint-plugin-optimize-regex": "1.2.0",
+    "eslint-plugin-promise": "4.2.1",
+    "eslint-plugin-ramda": "2.5.1",
+    "eslint-plugin-react": "7.21.4",
+    "eslint-plugin-react-hooks": "4.1.2",
+    "jest": "26.6.0",
+    "microbundle": "0.12.4",
+    "npm-run-all": "4.1.5"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "babel": {
+    "presets": [
+      "module:@sitearcade/babel-preset"
+    ]
+  },
+  "browserslist": [
+    "extends @sitearcade/browserslist-config"
+  ],
+  "eslintConfig": {
+    "extends": [
+      "@sitearcade/eslint-config"
+    ]
+  },
+  "jest": {
+    "preset": "@sitearcade/jest-preset"
+  }
+}

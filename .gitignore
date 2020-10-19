@@ -1,0 +1,17 @@
+# directories
+.*/
+node_modules
+dist/
+
+# files
+.env*.local
+.ultra*
+
+# extensions
+*.log
+*.diff
+*.code-workspace
+
+# exclude
+!.github
+!.circleci
