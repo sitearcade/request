@@ -30,8 +30,8 @@
     "dist"
   ],
   "scripts": {
-    "start": "microbundle watch --no-compress -f cjs,esm,modern",
-    "build": "microbundle --no-compress -f cjs,esm,modern",
+    "start": "microbundle watch --no-compress -f cjs,esm,modern --jsx React.createElement --jsxImportSource react",
+    "build": "microbundle --no-compress -f cjs,esm,modern --jsx React.createElement --jsxImportSource react",
     "clean": "rm -rf dist",
     "test": "NODE_ENV=testing jest --passWithNoTests --coverage",
     "test:ci": "NODE_ENV=testing jest --passWithNoTests --ci",
