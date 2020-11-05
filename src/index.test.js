@@ -71,6 +71,29 @@ describe('request(opts)', () => {
   });
 });
 
+describe('request(url, opts)', () => {
+  it('supports alternative signature', async () => {
+    fetch.once(JSON.stringify(sampleRes));
+    const res = await request('https://www.example.com', {body: {}});
+
+    expect(res).toMatchInlineSnapshot(`
+      Object {
+        "body": Object {
+          "status": "ok",
+        },
+        "headers": Headers {
+          Symbol(map): Object {
+            "Content-Type": Array [
+              "text/plain;charset=UTF-8",
+            ],
+          },
+        },
+        "status": 200,
+      }
+    `);
+  });
+});
+
 describe('request.extend(defs)', () => {
   it('creates new requester with updated defaults', async () => {
     const req = request.extend({
@@ -118,6 +141,48 @@ describe('request.extend(defs)', () => {
           },
         },
         "status": 404,
+      }
+    `);
+  });
+
+  it('also supports alternative signature', async () => {
+    const req = request.extend();
+
+    fetch.once(JSON.stringify(sampleRes));
+    const res = await req('https://www.example.com');
+
+    expect(res).toMatchInlineSnapshot(`
+      Object {
+        "body": Object {
+          "status": "ok",
+        },
+        "headers": Headers {
+          Symbol(map): Object {
+            "Content-Type": Array [
+              "text/plain;charset=UTF-8",
+            ],
+          },
+        },
+        "status": 200,
+      }
+    `);
+
+    fetch.once(JSON.stringify(sampleRes));
+    const altRes = await req('https://www.example.com', {useJson: true});
+
+    expect(altRes).toMatchInlineSnapshot(`
+      Object {
+        "body": Object {
+          "status": "ok",
+        },
+        "headers": Headers {
+          Symbol(map): Object {
+            "Content-Type": Array [
+              "text/plain;charset=UTF-8",
+            ],
+          },
+        },
+        "status": 200,
       }
     `);
   });

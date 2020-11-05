@@ -67,14 +67,14 @@ const getAll = (res) => res ?? null;
 
 // export
 
-export default async function request(opts = {}) {
+export default async function request(maybePath, maybeOpts) {
   const {
     baseUrl, path, query, body, headers,
     retries, factor, minTimeout, maxTimeout, randomize,
     useJson = false, useCors = false,
     response = 'json', onlyBody = false,
     ...rest
-  } = opts;
+  } = maybeOpts || maybePath;
 
   const retryOpts = {
     ...retryDefs,
@@ -85,7 +85,7 @@ export default async function request(opts = {}) {
     randomize,
   };
 
-  const reqUrl = encodeUrl(baseUrl, path, query);
+  const reqUrl = encodeUrl(baseUrl, path || maybePath, query);
 
   const reqOpts = {
     method: body ? 'POST' : 'GET',
@@ -112,5 +112,10 @@ export default async function request(opts = {}) {
     .catch(parseErr(reqUrl, reqOpts));
 }
 
-request.extend = (defs = {}) => (opts) =>
-  request(mergeDeepRight(defs, opts));
+request.extend = (defs = {}) => (maybePath, maybeOpts) =>
+  request(mergeDeepRight(
+    defs,
+    maybeOpts ? {...maybeOpts, path: maybePath} :
+    typeof maybePath === 'object' ? maybePath :
+    {path: maybePath},
+  ));
