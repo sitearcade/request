@@ -2,7 +2,7 @@
 
 import qs from 'querystring';
 
-import fetch from 'isomorphic-unfetch';
+import 'isomorphic-unfetch';
 import retry from 'promise-retry';
 import {mergeDeepRight} from 'ramda';
 
@@ -34,21 +34,19 @@ const encodeBody = (body, useJson) => (
 );
 
 const parseRes = (type) => async (res) => {
-  const parsed = {
+  const response = {
     status: res.status,
     headers: res.headers,
     body: await res[type]().catch(nil),
   };
 
   if (!res.ok) {
-    // eslint-disable-next-line fp/no-mutating-assign
-    throw Object.assign(
-      new Error(parsed?.body?.message ?? `${res.status} ${res.statusText}`),
-      {parsed},
-    );
+    const err = new Error(response?.body?.message ?? `${res.status} ${res.statusText}`);
+    err.response = response;
+    throw err;
   }
 
-  return parsed;
+  return response;
 };
 
 const parseType = {
@@ -57,6 +55,11 @@ const parseType = {
   blob: parseRes('blob'),
   formData: parseRes('formData'),
   arrayBuffer: parseRes('arrayBuffer'),
+};
+
+const parseErr = (url, opts) => (err) => {
+  err.request = {url, ...opts};
+  throw err;
 };
 
 const getBody = (res) => res.body ?? null;
@@ -105,7 +108,8 @@ export default async function request(opts = {}) {
     fetch(reqUrl, reqOpts).catch(retryFn)
   ), retryOpts)
     .then(parseType[response])
-    .then(onlyBody ? getBody : getAll);
+    .then(onlyBody ? getBody : getAll)
+    .catch(parseErr(reqUrl, reqOpts));
 }
 
 request.extend = (defs = {}) => (opts) =>
