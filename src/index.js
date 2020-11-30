@@ -2,9 +2,10 @@
 
 import qs from 'querystring';
 
+import 'abort-controller/polyfill';
 import 'isomorphic-unfetch';
 import retry from 'promise-retry';
-import {mergeDeepRight} from 'ramda';
+import * as R from 'ramda';
 
 // vars
 
@@ -73,8 +74,10 @@ export default async function request(maybePath, maybeOpts) {
     retries, factor, minTimeout, maxTimeout, randomize,
     useJson = false, useCors = false,
     response = 'json', onlyBody = false,
+    timeout = 0,
     ...rest
   } = maybeOpts || maybePath;
+  const ms = parseInt(timeout) || 0;
 
   const retryOpts = {
     ...retryDefs,
@@ -104,16 +107,24 @@ export default async function request(maybePath, maybeOpts) {
     },
   };
 
-  return retry((retryFn) => (
-    fetch(reqUrl, reqOpts).catch(retryFn)
-  ), retryOpts)
+  return retry((retryFn) => {
+    let ctrl = null;
+
+    if (ms) {
+      ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), ms);
+    }
+
+    return fetch(reqUrl, ctrl ? {...reqOpts, signal: ctrl.signal} : reqOpts).catch(retryFn);
+  }, retryOpts)
+    // .then(R.tap(console.log))
     .then(parseType[response])
     .then(onlyBody ? getBody : getAll)
     .catch(parseErr(reqUrl, reqOpts));
 }
 
 request.extend = (defs = {}) => (maybePath, maybeOpts) =>
-  request(mergeDeepRight(
+  request(R.mergeDeepRight(
     defs,
     maybeOpts ? {...maybeOpts, path: maybePath} :
     typeof maybePath === 'object' ? maybePath :

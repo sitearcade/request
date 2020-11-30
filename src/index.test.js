@@ -1,7 +1,7 @@
 // import
 
 import {fetchMock} from '@sitearcade/jest-preset/tools';
-import {identity} from 'ramda';
+import * as R from 'ramda';
 
 import request from './index';
 
@@ -40,7 +40,7 @@ describe('request(opts)', () => {
   it('returns errors with a certain shape', async () => {
     fetch.once(JSON.stringify(sampleRes), {ok: false, status: 404});
     const err = await request({path: 'https://www.error.com'}).catch(
-      identity,
+      R.identity,
     );
 
     expect(err).toMatchInlineSnapshot('[Error: 404 Not Found]');
@@ -92,6 +92,60 @@ describe('request(url, opts)', () => {
       }
     `);
   });
+
+  it('handles AbortSignal properly', async () => {
+    const c = new AbortController();
+
+    const res = await request('/', {signal: c.signal});
+
+    expect(res.body).toBeNull();
+
+    c.abort();
+
+    const err = await request('/', {signal: c.signal}).catch(R.identity);
+
+    expect(err).toMatchInlineSnapshot('[AbortError: The operation was aborted. ]');
+  });
+
+  it('can timeout after specific duration', async () => {
+    jest.useFakeTimers();
+
+    fetch.once(JSON.stringify(sampleRes));
+    const t0 = await request('https://www.example.com', {
+      useJson: true,
+      timeout: 0,
+    });
+
+    expect(t0).toMatchInlineSnapshot(`
+      Object {
+        "body": Object {
+          "status": "ok",
+        },
+        "headers": Headers {
+          Symbol(map): Object {
+            "Content-Type": Array [
+              "text/plain;charset=UTF-8",
+            ],
+          },
+        },
+        "status": 200,
+      }
+    `);
+
+    fetch.once(async () => {
+      jest.advanceTimersByTime(10);
+
+      return JSON.stringify(sampleRes);
+    });
+    const t1 = await request('https://www.example.com', {
+      useJson: true,
+      timeout: 1,
+    }).catch(R.identity);
+
+    expect(t1).toMatchInlineSnapshot('[AbortError: The operation was aborted. ]');
+
+    jest.useRealTimers();
+  });
 });
 
 describe('request.extend(defs)', () => {
@@ -112,7 +166,7 @@ describe('request.extend(defs)', () => {
     `);
 
     fetch.once(JSON.stringify(sampleRes), {ok: false, status: 404});
-    const err = await req({path: 'https://www.error.com'}).catch(identity);
+    const err = await req({path: 'https://www.error.com'}).catch(R.identity);
 
     expect(err).toMatchInlineSnapshot('[Error: 404 Not Found]');
     expect(err.request).toMatchInlineSnapshot(`
