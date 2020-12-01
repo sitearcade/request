@@ -5,7 +5,7 @@ import qs from 'querystring';
 import 'abort-controller/polyfill';
 import 'isomorphic-unfetch';
 import retry from 'promise-retry';
-import * as R from 'ramda';
+import {mergeDeepRight} from 'ramda';
 
 // vars
 
@@ -124,7 +124,7 @@ export default async function request(maybePath, maybeOpts) {
 }
 
 request.extend = (defs = {}) => (maybePath, maybeOpts) =>
-  request(R.mergeDeepRight(
+  request(mergeDeepRight(
     defs,
     maybeOpts ? {...maybeOpts, path: maybePath} :
     typeof maybePath === 'object' ? maybePath :
