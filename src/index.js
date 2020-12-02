@@ -5,7 +5,7 @@ import qs from 'querystring';
 import 'abort-controller/polyfill';
 import 'isomorphic-unfetch';
 import retry from 'promise-retry';
-import {mergeDeepRight} from 'ramda';
+import {mergeDeepRight, is} from 'ramda';
 
 // vars
 
@@ -72,7 +72,7 @@ export default async function request(maybePath, maybeOpts) {
   const {
     baseUrl, path, query, body, headers,
     retries, factor, minTimeout, maxTimeout, randomize,
-    useJson = false, useCors = false,
+    useJson = false, useCors = false, sameOrigin = false,
     response = 'json', onlyBody = false,
     timeout = 0,
     ...rest
@@ -93,7 +93,8 @@ export default async function request(maybePath, maybeOpts) {
   const reqOpts = {
     method: body ? 'POST' : 'GET',
     body: encodeBody(body, useJson),
-    credentials: useCors ? undefined : 'include',
+    mode: sameOrigin ? 'same-origin' : useCors ? 'cors' : 'no-cors',
+    credentials: sameOrigin ? 'same-origin' : useCors ? 'omit' : 'include',
     ...rest,
     headers: {
       ...(useJson ? {
@@ -102,6 +103,9 @@ export default async function request(maybePath, maybeOpts) {
       } : {}),
       ...(useCors ? {
         'Access-Control-Allow-Origin': '*',
+      } : {}),
+      ...(is(String, sameOrigin) ? {
+        'Access-Control-Allow-Origin': sameOrigin,
       } : {}),
       ...headers,
     },
@@ -117,7 +121,6 @@ export default async function request(maybePath, maybeOpts) {
 
     return fetch(reqUrl, ctrl ? {...reqOpts, signal: ctrl.signal} : reqOpts).catch(retryFn);
   }, retryOpts)
-    // .then(R.tap(console.log))
     .then(parseType[response])
     .then(onlyBody ? getBody : getAll)
     .catch(parseErr(reqUrl, reqOpts));

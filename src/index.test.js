@@ -45,14 +45,15 @@ describe('request(opts)', () => {
 
     expect(err).toMatchInlineSnapshot('[Error: 404 Not Found]');
     expect(err.request).toMatchInlineSnapshot(`
-        Object {
-          "body": undefined,
-          "credentials": "include",
-          "headers": Object {},
-          "method": "GET",
-          "url": "https://www.error.com",
-        }
-      `);
+      Object {
+        "body": undefined,
+        "credentials": "include",
+        "headers": Object {},
+        "method": "GET",
+        "mode": "no-cors",
+        "url": "https://www.error.com",
+      }
+    `);
     expect(err.response).toMatchInlineSnapshot(`
         Object {
           "body": Object {
@@ -104,7 +105,9 @@ describe('request(url, opts)', () => {
 
     const err = await request('/', {signal: c.signal}).catch(R.identity);
 
-    expect(err).toMatchInlineSnapshot('[AbortError: The operation was aborted. ]');
+    expect(err).toMatchInlineSnapshot(
+      '[AbortError: The operation was aborted. ]',
+    );
   });
 
   it('can timeout after specific duration', async () => {
@@ -142,7 +145,9 @@ describe('request(url, opts)', () => {
       timeout: 1,
     }).catch(R.identity);
 
-    expect(t1).toMatchInlineSnapshot('[AbortError: The operation was aborted. ]');
+    expect(t1).toMatchInlineSnapshot(
+      '[AbortError: The operation was aborted. ]',
+    );
 
     jest.useRealTimers();
   });
@@ -172,13 +177,14 @@ describe('request.extend(defs)', () => {
     expect(err.request).toMatchInlineSnapshot(`
       Object {
         "body": undefined,
-        "credentials": undefined,
+        "credentials": "omit",
         "headers": Object {
           "Accept": "application/json",
           "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json",
         },
         "method": "GET",
+        "mode": "cors",
         "url": "https://www.error.com",
       }
     `);
