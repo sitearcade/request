@@ -49,7 +49,7 @@
     "ramda": "^0.27.1"
   },
   "devDependencies": {
-    "@sitearcade/babel-preset": "0.2.0",
+    "@sitearcade/babel-preset": "0.5.0",
     "@sitearcade/browserslist-config": "0.3.0",
     "@sitearcade/eslint-config": "0.3.0",
     "@sitearcade/jest-preset": "2.1.0",
