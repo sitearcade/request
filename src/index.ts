@@ -10,6 +10,11 @@ import * as R from 'ramda';
 
 // types
 
+interface Requester {
+  extend: (moreDefs?: ReqOpts) => Requester;
+  (pathOrOpts: ReqOpts | string, maybeOpts?: ReqOpts): Promise<Request>;
+}
+
 export interface ReqOpts extends RequestInit {
   baseUrl?: string;
   path?: string;
@@ -194,10 +199,10 @@ function createRequest(defs: ReqOpts = {}) {
       .catch(parseErr(reqUrl, reqOpts));
   }
 
-  request.extend = (moreDefs: ReqOpts = {}) =>
+  request.extend = (moreDefs: ReqOpts = {}): Requester =>
     createRequest(R.mergeDeepRight(defs, moreDefs) as ReqOpts);
 
-  return request;
+  return request as Requester;
 }
 
 export default createRequest();
