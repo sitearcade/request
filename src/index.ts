@@ -25,7 +25,6 @@ export interface ReqOpts extends RequestInit {
 
   // timing
   timeout?: number;
-  throttle?: number;
 
   // retries
   retries?: number;
@@ -73,9 +72,6 @@ const startSlashRx = /^\//;
 
 const nil = () => null;
 const isString = R.is(String);
-
-const delay = async (ms: number) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
 
 const encodeUrl = (
   baseUrl: string | undefined,
@@ -143,8 +139,7 @@ function createRequest(defs: ReqOpts = {}) {
       baseUrl, path, query, body, headers,
       retries, factor, minTimeout, maxTimeout, randomize,
       useJson = false, useCors = false, sameOrigin = false,
-      response = 'json', onlyBody = false,
-      timeout = 0, throttle = 0,
+      response = 'json', onlyBody = false, timeout = 0,
       ...rest
     } = R.mergeDeepRight(defs, opts);
 
@@ -182,11 +177,6 @@ function createRequest(defs: ReqOpts = {}) {
 
     return retry(async (retryFn) => {
       let ctrl: AbortController | null = null;
-
-      if (throttle) {
-        // TODO: Make this actually throttle!
-        await delay(throttle);
-      }
 
       if (timeout) {
         ctrl = new AbortController();
