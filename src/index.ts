@@ -5,6 +5,7 @@
 import type {ParsedUrlQueryInput} from 'querystring';
 import {stringify} from 'querystring';
 
+import fetch from 'isomorphic-unfetch';
 import retry from 'promise-retry';
 import * as R from 'ramda';
 
