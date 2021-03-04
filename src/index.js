@@ -5,7 +5,7 @@ import qs from 'querystring';
 import 'abort-controller/polyfill';
 import 'isomorphic-unfetch';
 import retry from 'promise-retry';
-import {mergeDeepRight, is} from 'ramda';
+import * as R from 'ramda';
 
 // vars
 
@@ -104,7 +104,7 @@ export default async function request(maybePath, maybeOpts) {
       ...(useCors ? {
         'Access-Control-Allow-Origin': '*',
       } : {}),
-      ...(is(String, sameOrigin) ? {
+      ...(R.is(String, sameOrigin) ? {
         'Access-Control-Allow-Origin': sameOrigin,
       } : {}),
       ...headers,
@@ -127,7 +127,7 @@ export default async function request(maybePath, maybeOpts) {
 }
 
 request.extend = (defs = {}) => (maybePath, maybeOpts) =>
-  request(mergeDeepRight(
+  request(R.mergeDeepRight(
     defs,
     maybeOpts ? {...maybeOpts, path: maybePath} :
     typeof maybePath === 'object' ? maybePath :

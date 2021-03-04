@@ -33,9 +33,9 @@
     "start": "microbundle watch --no-compress -f cjs,esm,modern --jsx React.createElement --jsxImportSource react",
     "build": "microbundle --no-compress -f cjs,esm,modern --jsx React.createElement --jsxImportSource react",
     "clean": "rm -rf dist",
-    "test": "NODE_ENV=testing jest --passWithNoTests --coverage",
-    "test:ci": "NODE_ENV=testing jest --passWithNoTests --ci",
-    "test:watch": "NODE_ENV=testing jest --passWithNoTests --coverage --watch",
+    "test": "NODE_ENV=test jest --passWithNoTests --coverage",
+    "test:ci": "NODE_ENV=test jest --passWithNoTests --ci",
+    "test:watch": "NODE_ENV=test jest --passWithNoTests --coverage --watch",
     "preversion": "npm run build && npm test",
     "postversion": "npm publish --access public",
     "prepublishOnly": "npm run clean && npm run build",
@@ -45,20 +45,19 @@
     "abort-controller": "^3.0.0",
     "isomorphic-unfetch": "^3.1.0",
     "promise-retry": "^2.0.1",
-    "querystring": "^0.2.0",
+    "querystring": "^0.2.1",
     "ramda": "^0.27.1"
   },
   "devDependencies": {
-    "@sitearcade/babel-preset": "0.5.0",
-    "@sitearcade/browserslist-config": "0.3.0",
-    "@sitearcade/eslint-config": "0.3.0",
-    "@sitearcade/jest-preset": "2.1.0",
-    "microbundle": "0.13.0",
-    "react": "17.0.1",
-    "react-dom": "17.0.1"
+    "@sitearcade/babel-preset": "1.1.8",
+    "@sitearcade/browserslist-config": "0.3.1",
+    "@sitearcade/eslint-config": "1.1.15",
+    "@sitearcade/jest-preset": "2.2.0",
+    "@sitearcade/prettier-config": "0.0.1",
+    "microbundle": "0.13.0"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=12"
   },
   "babel": {
     "presets": [
@@ -75,5 +74,6 @@
   },
   "jest": {
     "preset": "@sitearcade/jest-preset"
-  }
+  },
+  "prettier": "@sitearcade/prettier-config"
 }

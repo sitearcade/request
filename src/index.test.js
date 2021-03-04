@@ -39,9 +39,8 @@ describe('request(opts)', () => {
 
   it('returns errors with a certain shape', async () => {
     fetch.once(JSON.stringify(sampleRes), {ok: false, status: 404});
-    const err = await request({path: 'https://www.error.com'}).catch(
-      R.identity,
-    );
+    const err = await request({path: 'https://www.error.com'})
+      .catch(R.identity);
 
     expect(err).toMatchInlineSnapshot('[Error: 404 Not Found]');
     expect(err.request).toMatchInlineSnapshot(`
