@@ -11,6 +11,7 @@
     "email": "mike@sitearcade.com",
     "url": "https://www.sitearcade.com"
   },
+  "type": "module",
   "sideEffects": false,
   "source": "src/index.js",
   "main": "./dist/index.js",
