@@ -10,7 +10,8 @@ import * as R from 'ramda';
 // types
 
 export type ResponseType = 'json' | 'text' | 'blob' | 'formData' | 'arrayBuffer';
-export type ResponseBody<T> = T extends 'json' ? any :
+export type ResponseBody<T> =
+  T extends 'json' ? any :
   T extends 'text' ? string :
   T extends 'blob' ? Blob :
   T extends 'formData' ? FormData :
@@ -139,8 +140,10 @@ function createRequest(defs: RequestOpts = {}) {
         return fetch(reqUrl, theseOpts).catch(retryFn);
       }, retryOpts);
 
-      const parsedBody = await res[responseType]().catch(nil);
-      const response = {
+      const parsedBody: ResponseBody<typeof responseType> =
+        await res[responseType]().catch(nil);
+
+      const response: RequestResponse<typeof responseType> = {
         status: res.status,
         headers: res.headers,
         body: parsedBody,
