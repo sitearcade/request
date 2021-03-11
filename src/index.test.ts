@@ -17,7 +17,7 @@ beforeAll(() => {
 
 describe('request(opts)', () => {
   it('sends request and receives response using default opts', async () => {
-    fetch.once(JSON.stringify(sampleRes));
+    fetchMock.once(JSON.stringify(sampleRes));
     const res = await request({path: 'https://www.example.com'});
 
     expect(res).toMatchInlineSnapshot(`
@@ -38,7 +38,7 @@ describe('request(opts)', () => {
   });
 
   it('returns errors with a certain shape', async () => {
-    fetch.once(JSON.stringify(sampleRes), {ok: false, status: 404});
+    fetchMock.once(JSON.stringify(sampleRes), {ok: false, status: 404});
     const err = await request({path: 'https://www.error.com'})
       .catch(R.identity);
 
@@ -50,7 +50,6 @@ describe('request(opts)', () => {
         "headers": Object {},
         "method": "GET",
         "mode": "no-cors",
-        "url": "https://www.error.com",
       }
     `);
     expect(err.response).toMatchInlineSnapshot(`
@@ -73,7 +72,7 @@ describe('request(opts)', () => {
 
 describe('request(url, opts)', () => {
   it('supports alternative signature', async () => {
-    fetch.once(JSON.stringify(sampleRes));
+    fetchMock.once(JSON.stringify(sampleRes));
     const res = await request('https://www.example.com', {body: {}});
 
     expect(res).toMatchInlineSnapshot(`
@@ -112,7 +111,7 @@ describe('request(url, opts)', () => {
   it('can timeout after specific duration', async () => {
     jest.useFakeTimers();
 
-    fetch.once(JSON.stringify(sampleRes));
+    fetchMock.once(JSON.stringify(sampleRes));
     const t0 = await request('https://www.example.com', {
       useJson: true,
       timeout: 0,
@@ -134,7 +133,7 @@ describe('request(url, opts)', () => {
       }
     `);
 
-    fetch.once(async () => {
+    fetchMock.once(async () => {
       jest.advanceTimersByTime(10);
 
       return JSON.stringify(sampleRes);
@@ -160,7 +159,7 @@ describe('request.extend(defs)', () => {
       onlyBody: true,
     });
 
-    fetch.once(JSON.stringify(sampleRes));
+    fetchMock.once(JSON.stringify(sampleRes));
     const res = await req({path: 'https://www.example.com'});
 
     expect(res).toMatchInlineSnapshot(`
@@ -169,7 +168,7 @@ describe('request.extend(defs)', () => {
       }
     `);
 
-    fetch.once(JSON.stringify(sampleRes), {ok: false, status: 404});
+    fetchMock.once(JSON.stringify(sampleRes), {ok: false, status: 404});
     const err = await req({path: 'https://www.error.com'}).catch(R.identity);
 
     expect(err).toMatchInlineSnapshot('[Error: 404 Not Found]');
@@ -184,7 +183,6 @@ describe('request.extend(defs)', () => {
         },
         "method": "GET",
         "mode": "cors",
-        "url": "https://www.error.com",
       }
     `);
     expect(err.response).toMatchInlineSnapshot(`
@@ -207,7 +205,7 @@ describe('request.extend(defs)', () => {
   it('also supports alternative signature', async () => {
     const req = request.extend();
 
-    fetch.once(JSON.stringify(sampleRes));
+    fetchMock.once(JSON.stringify(sampleRes));
     const res = await req('https://www.example.com');
 
     expect(res).toMatchInlineSnapshot(`
@@ -226,7 +224,7 @@ describe('request.extend(defs)', () => {
       }
     `);
 
-    fetch.once(JSON.stringify(sampleRes));
+    fetchMock.once(JSON.stringify(sampleRes));
     const altRes = await req('https://www.example.com', {useJson: true});
 
     expect(altRes).toMatchInlineSnapshot(`

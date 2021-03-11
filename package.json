@@ -12,7 +12,8 @@
     "url": "https://www.sitearcade.com"
   },
   "sideEffects": false,
-  "source": "src/index.js",
+  "source": "src/index.ts",
+  "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "jsnext:main": "./dist/index.modern.js",
   "module": "./dist/index.module.js",
@@ -49,12 +50,15 @@
     "ramda": "^0.27.1"
   },
   "devDependencies": {
-    "@sitearcade/babel-preset": "1.1.8",
+    "@sitearcade/babel-preset": "1.1.9",
     "@sitearcade/browserslist-config": "0.3.1",
-    "@sitearcade/eslint-config": "1.1.15",
+    "@sitearcade/eslint-config": "1.3.0",
     "@sitearcade/jest-preset": "2.2.0",
     "@sitearcade/prettier-config": "0.0.1",
-    "microbundle": "0.13.0"
+    "@types/promise-retry": "1.1.3",
+    "@types/ramda": "0.27.38",
+    "microbundle": "0.13.0",
+    "typescript": "4.2.3"
   },
   "engines": {
     "node": ">=12"
