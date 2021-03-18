@@ -22,7 +22,7 @@
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
-    "target": "es5"
+    "target": "esnext"
   },
   "include": ["types.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", ".test", "dist"]
