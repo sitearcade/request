@@ -26,14 +26,17 @@ export interface RequestResponse<T extends ResponseType> {
   body: ResponseBody<T>;
 }
 
+export type Fetcher<T = any> = () => Promise<T>;
+export type Adaptor = <T = any>(fetcher: Fetcher<T>) => Promise<T>;
+
 export interface RequestOpts extends RequestInit {
   baseUrl?: string;
   path?: string;
   body?: any;
   query?: ParsedUrlQueryInput;
 
-  useJson? : boolean;
-  useCors? : boolean;
+  useJson?: boolean;
+  useCors?: boolean;
   sameOrigin?: boolean | string;
 
   response?: ResponseType;
@@ -43,9 +46,11 @@ export interface RequestOpts extends RequestInit {
   factor?: number;
   minTimeout?: number;
   maxTimeout?: number;
-  randomize? : boolean;
+  randomize?: boolean;
 
-  timeout? : number;
+  timeout?: number;
+
+  adaptors?: Adaptor | Adaptor[];
 }
 
 export interface RequestError<T extends ResponseType> extends Error {
@@ -66,9 +71,11 @@ export interface RequestExt extends Request {
   extend: (newDefs?: RequestOpts) => RequestExt;
 }
 
+type RetryOpts = Parameters<typeof retry>[0];
+
 // vars
 
-const retryDefs = {
+const retryDefs: RetryOpts = {
   retries: 0,
   factor: 1.5,
   minTimeout: 500,
@@ -92,32 +99,34 @@ export const mergeRequestOpts = (
     pathOrOpts
 );
 
+export const createRetryAdaptor = (retryOpts: RetryOpts = {}): Adaptor =>
+  async (fetcher) => retry(
+    async (retryFn) => fetcher().catch(retryFn),
+    {...retryDefs, ...retryOpts},
+  );
+
 // export
 
 function createRequest(defs: RequestOpts = {}) {
-  console.log(defs);
-
-  const request: RequestExt = async (pathOrOpts, maybeOpts) => {
+  const request: RequestExt = async <T = any>(
+    pathOrOpts: RequestOpts | string,
+    maybeOpts?: RequestOpts,
+  ): Promise<T> => {
     const opts = mergeRequestOpts(pathOrOpts, maybeOpts);
-    console.log('enter', pathOrOpts);
 
     const {
       baseUrl, path, query, body, headers,
       retries, factor, minTimeout, maxTimeout, randomize,
       useJson = false, useCors = false, sameOrigin = false,
       response: responseType = 'json', onlyBody = false,
-      timeout = 0,
+      timeout = 0, adaptors,
       ...rest
     } = R.mergeDeepRight(defs, opts) as RequestOpts;
 
-    const retryOpts = {
-      ...retryDefs,
-      retries,
-      factor,
-      minTimeout,
-      maxTimeout,
-      randomize,
-    };
+    const realAdaptors = (
+      Array.isArray(adaptors) ? adaptors :
+      adaptors ? [adaptors] : []
+    ).filter(Boolean);
 
     const reqUrl = [
       ...baseUrl ? [baseUrl.replace(endSlashRx, ''), '/'] : [],
@@ -146,24 +155,18 @@ function createRequest(defs: RequestOpts = {}) {
       },
     };
 
-    console.log(reqOpts.method, reqUrl);
+    const fetcher: Fetcher<T> = async () => {
+      let ctrl: AbortController | null = null;
 
-    try {
-      const res = await retry(async (retryFn) => {
-        let ctrl: AbortController | null = null;
+      if (timeout) {
+        ctrl = new AbortController();
+        setTimeout(() => ctrl?.abort(), timeout);
+      }
 
-        if (timeout) {
-          ctrl = new AbortController();
-          setTimeout(() => ctrl?.abort(), timeout);
-        }
+      const theseOpts = ctrl ?
+        {...reqOpts, signal: ctrl.signal} : reqOpts;
 
-        const theseOpts = ctrl ?
-          {...reqOpts, signal: ctrl.signal} : reqOpts;
-
-        console.log('in retry', reqUrl);
-
-        return fetch(reqUrl, theseOpts).catch(retryFn);
-      }, retryOpts);
+      const res = await fetch(reqUrl, theseOpts);
 
       const parsedBody: ResponseBody<typeof responseType> =
         await res[responseType]().catch(nil);
@@ -186,6 +189,12 @@ function createRequest(defs: RequestOpts = {}) {
       }
 
       return onlyBody ? parsedBody : response;
+    };
+
+    try {
+      return await realAdaptors.reduce<Fetcher>((f, adaptor) => {
+        return async () => adaptor<T>(f);
+      }, fetcher)();
     } catch (err) {
       err.url = reqUrl;
       err.request = reqOpts;
