@@ -1,6 +1,7 @@
 // import
 
-import qs, {ParsedUrlQueryInput} from 'querystring';
+import type {ParsedUrlQueryInput} from 'querystring';
+import qs from 'querystring';
 
 import 'abort-controller/polyfill';
 import 'isomorphic-unfetch';
@@ -9,7 +10,8 @@ import * as R from 'ramda';
 
 // types
 
-export type ResponseType = 'json' | 'text' | 'blob' | 'formData' | 'arrayBuffer';
+export type ResponseType = 'arrayBuffer' | 'blob' | 'formData' | 'json' | 'text';
+
 export type ResponseBody<T> =
   T extends 'json' ? any :
   T extends 'text' ? string :
@@ -17,6 +19,7 @@ export type ResponseBody<T> =
   T extends 'formData' ? FormData :
   T extends 'arrayBuffer' ? ArrayBuffer :
   never;
+
 export interface RequestResponse<T extends ResponseType> {
   status: number;
   headers: Headers;
@@ -31,7 +34,7 @@ export interface RequestOpts extends RequestInit {
 
   useJson? : boolean;
   useCors? : boolean;
-  sameOrigin?: boolean;
+  sameOrigin?: boolean | string;
 
   response?: ResponseType;
   onlyBody?: boolean;
@@ -52,6 +55,17 @@ export interface RequestError<T extends ResponseType> extends Error {
   response: RequestResponse<T>;
 }
 
+export interface Request {
+  <T = any>(
+    pathOrOpts: RequestOpts | string,
+    maybeOpts?: RequestOpts,
+  ): Promise<T>;
+}
+
+export interface RequestExt extends Request {
+  extend: (newDefs?: RequestOpts) => RequestExt;
+}
+
 // vars
 
 const retryDefs = {
@@ -69,16 +83,20 @@ const startSlashRx = /^\//;
 
 const nil = () => null;
 
+export const mergeRequestOpts = (
+  pathOrOpts: RequestOpts | string,
+  maybeOpts?: RequestOpts,
+): RequestOpts => (
+  typeof pathOrOpts === 'string' ?
+    {path: pathOrOpts, ...maybeOpts} :
+    pathOrOpts
+);
+
 // export
 
 function createRequest(defs: RequestOpts = {}) {
-  async function request<T = any>(
-    pathOrOpts: RequestOpts | string,
-    maybeOpts?: RequestOpts,
-  ): Promise<T> {
-    const opts: RequestOpts = typeof pathOrOpts === 'string' ?
-      {path: pathOrOpts, ...maybeOpts} :
-      pathOrOpts;
+  const request: RequestExt = async (pathOrOpts, maybeOpts) => {
+    const opts = mergeRequestOpts(pathOrOpts, maybeOpts);
 
     const {
       baseUrl, path, query, body, headers,
@@ -104,7 +122,7 @@ function createRequest(defs: RequestOpts = {}) {
       ...query ? ['?', qs.stringify(query)] : [],
     ].join('');
 
-    const reqOpts = {
+    const reqOpts: RequestInit = {
       method: body ? 'POST' : 'GET',
       body: body ? useJson ? JSON.stringify(body) : body : undefined,
       mode: sameOrigin ? 'same-origin' : useCors ? 'cors' : 'no-cors',
@@ -119,14 +137,14 @@ function createRequest(defs: RequestOpts = {}) {
           'Access-Control-Allow-Origin': '*',
         } : {}),
         ...(R.is(String, sameOrigin) ? {
-          'Access-Control-Allow-Origin': sameOrigin,
+          'Access-Control-Allow-Origin': sameOrigin as string,
         } : {}),
         ...headers,
       },
-    } as RequestInit;
+    };
 
     try {
-      const res = await retry((retryFn) => {
+      const res = await retry(async (retryFn) => {
         let ctrl: AbortController | null = null;
 
         if (timeout) {
@@ -136,6 +154,8 @@ function createRequest(defs: RequestOpts = {}) {
 
         const theseOpts = ctrl ?
           {...reqOpts, signal: ctrl.signal} : reqOpts;
+
+        console.log(reqUrl);
 
         return fetch(reqUrl, theseOpts).catch(retryFn);
       }, retryOpts);
@@ -167,7 +187,7 @@ function createRequest(defs: RequestOpts = {}) {
 
       throw err;
     }
-  }
+  };
 
   request.extend = (newDefs: RequestOpts = {}) =>
     createRequest(R.mergeDeepRight(defs, newDefs) as RequestOpts);
