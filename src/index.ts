@@ -107,7 +107,7 @@ export const createRetryAdaptor = (retryOpts: RetryOpts = {}): Adaptor =>
 
 // export
 
-function createRequest(defs: RequestOpts = {}) {
+export function createRequest(defs: RequestOpts = {}) {
   const request: RequestExt = async <T = any>(
     pathOrOpts: RequestOpts | string,
     maybeOpts?: RequestOpts,

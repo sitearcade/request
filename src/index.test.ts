@@ -3,7 +3,7 @@
 import {fetchMock} from '@sitearcade/jest-preset/tools';
 import * as R from 'ramda';
 
-import request from './index';
+import {request} from './index';
 
 // vars
 
