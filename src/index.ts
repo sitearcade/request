@@ -41,13 +41,6 @@ export interface RequestOpts extends RequestInit {
 
   response?: ResponseType;
   onlyBody?: boolean;
-
-  retries?: number;
-  factor?: number;
-  minTimeout?: number;
-  maxTimeout?: number;
-  randomize?: boolean;
-
   timeout?: number;
 
   adaptors?: Adaptor | Adaptor[];
@@ -116,7 +109,6 @@ export function createRequest(defs: RequestOpts = {}) {
 
     const {
       baseUrl, path, query, body, headers,
-      retries, factor, minTimeout, maxTimeout, randomize,
       useJson = false, useCors = false, sameOrigin = false,
       response: responseType = 'json', onlyBody = false,
       timeout = 0, adaptors,
