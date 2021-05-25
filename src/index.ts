@@ -95,8 +95,11 @@ export const mergeRequestOpts = (
 // export
 
 function createRequest(defs: RequestOpts = {}) {
+  console.log(defs);
+
   const request: RequestExt = async (pathOrOpts, maybeOpts) => {
     const opts = mergeRequestOpts(pathOrOpts, maybeOpts);
+    console.log('enter', pathOrOpts);
 
     const {
       baseUrl, path, query, body, headers,
@@ -143,6 +146,8 @@ function createRequest(defs: RequestOpts = {}) {
       },
     };
 
+    console.log(reqOpts.method, reqUrl);
+
     try {
       const res = await retry(async (retryFn) => {
         let ctrl: AbortController | null = null;
@@ -155,7 +160,7 @@ function createRequest(defs: RequestOpts = {}) {
         const theseOpts = ctrl ?
           {...reqOpts, signal: ctrl.signal} : reqOpts;
 
-        console.log(reqUrl);
+        console.log('in retry', reqUrl);
 
         return fetch(reqUrl, theseOpts).catch(retryFn);
       }, retryOpts);
