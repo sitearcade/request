@@ -209,4 +209,4 @@ function createRequest(defs: RequestOpts = {}) {
   return request;
 }
 
-export default createRequest();
+export const request = createRequest();
