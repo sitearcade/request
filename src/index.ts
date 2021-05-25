@@ -147,8 +147,6 @@ export function createRequest(defs: RequestOpts = {}) {
       },
     };
 
-    console.log('outside fetcher');
-
     const fetcher: Fetcher<T> = async () => {
       let ctrl: AbortController | null = null;
 
@@ -160,7 +158,6 @@ export function createRequest(defs: RequestOpts = {}) {
       const theseOpts = ctrl ?
         {...reqOpts, signal: ctrl.signal} : reqOpts;
 
-      console.log('before fetch');
       const res = await fetch(reqUrl, theseOpts);
 
       const parsedBody: ResponseBody<typeof responseType> =
@@ -187,8 +184,6 @@ export function createRequest(defs: RequestOpts = {}) {
     };
 
     try {
-      console.log('before adaptors');
-
       return await realAdaptors.reduce<Fetcher>((f, adaptor) => {
         return async () => adaptor<T>(f);
       }, fetcher)();
